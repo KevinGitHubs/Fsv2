@@ -1,3 +1,9 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -9,12 +15,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
+<header class="glass">
   <div class="container">
     <div class="header-content">
       <div class="logo"><span>🎮 FSm4e</span></div>
       <div class="user-info">
-        <div class="coin-display">🪙 <span id="user-coins">0</span> koin</div>
+        <div class="coin-display">🪙 <span id="user-coins">0</span></div>
         <div class="rank-badge" id="user-rank-badge">👑 <span id="user-rank">NonPil</span></div>
         <button class="btn btn-primary" id="chat-toggle">💬 Chat</button>
         <button class="btn btn-primary" id="sound-toggle">🔊 Sound</button>
@@ -24,26 +30,26 @@
   </div>
 </header>
 
-<div class="container">
+<main class="container">
   <div id="dashboard" class="hidden">
-    <div class="card streak-banner">
+    <div class="card glass streak-banner">
       <h3>🔥 Daily Streak <span id="streak-count">0</span> hari</h3>
       <button class="btn btn-success" id="claim-streak">Klaim Hadiah</button>
     </div>
 
-    <div class="card">
+    <div class="card glass">
       <h3>🎰 Spin-the-Wheel (Gratis 1x/hari)</h3>
       <canvas id="wheel-canvas" width="300" height="300"></canvas>
       <button class="btn btn-primary" id="spin-btn">Putar</button>
     </div>
 
-    <div class="card">
+    <div class="card glass">
       <h2 class="card-title">📱 Scan QR Code</h2>
       <div class="scan-stats">Scan hari ini: <span id="scan-count">0</span>/<span id="scan-limit">5</span> (+50 koin/scan)</div>
       <button class="btn btn-primary" id="scan-btn">📷 Buka Scanner</button>
     </div>
 
-    <div class="game-container">
+    <div class="game-container glass">
       <h2>🎮 Game Zone</h2>
       <div class="game-selection">
         <div class="game-card" data-game="math">🧮<h3>Math Game</h3></div>
@@ -54,14 +60,14 @@
       <div id="active-game" class="hidden"><div id="game-content"></div></div>
     </div>
 
-    <div class="card">
+    <div class="card glass">
       <h2 class="card-title">🛍️ Toko Produk</h2>
       <div id="product-list" class="product-list"></div>
     </div>
 
     <div id="admin-panel" class="hidden"></div>
 
-    <div class="chat-container hidden" id="chat-container">
+    <div class="chat-container glass hidden" id="chat-container">
       <h2>💬 Global Chat</h2>
       <div class="chat-messages" id="chat-messages"></div>
       <div class="chat-input-container">
@@ -70,9 +76,10 @@
       </div>
     </div>
   </div>
-</div>
+</main>
 
-<div id="login-modal" class="modal hidden"><div class="modal-content">
+<!-- MODALS -->
+<div id="login-modal" class="modal hidden"><div class="modal-content glass">
   <h2>🔐 Login</h2>
   <form id="login-form">
     <input type="text" id="login-username" class="form-control" placeholder="Username" required>
@@ -82,7 +89,7 @@
   <p style="text-align:center;margin-top:15px;">Belum punya akun? <a href="#" id="show-register">Daftar</a></p>
 </div></div>
 
-<div id="register-modal" class="modal hidden"><div class="modal-content">
+<div id="register-modal" class="modal hidden"><div class="modal-content glass">
   <h2>👤 Daftar</h2>
   <form id="register-form">
     <input type="text" id="register-name" class="form-control" placeholder="Nama Lengkap" required>
@@ -94,7 +101,7 @@
   <p style="text-align:center;margin-top:15px;">Sudah punya akun? <a href="#" id="show-login">Login</a></p>
 </div></div>
 
-<div id="qr-scanner-modal" class="modal hidden"><div class="modal-content">
+<div id="qr-scanner-modal" class="modal hidden"><div class="modal-content glass">
   <h2>📱 Scan QR</h2>
   <video id="qr-video" style="width:100%;max-width:300px;border-radius:10px;"></video>
   <p>Arahkan kamera ke QR code</p>
