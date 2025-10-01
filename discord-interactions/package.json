@@ -1,0 +1,14 @@
+{
+  "name": "fsm4e-discord-interactions",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "discord-interactions": "^4.0.0",
+    "dotenv": "^16.4.5"
+  }
+}
