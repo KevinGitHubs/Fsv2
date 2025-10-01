@@ -22,7 +22,7 @@ async function login(e) {
   const username = el('login-username').value.trim();
   const plain = el('login-password').value;
   const { data: user } = await supabaseClient.from('users').select('*').eq('username', username).single();
-  if (!user) return notify('User tidak ditemukan', 'error');
+  if (!user) return notify('Username tidak ditemukan', 'error');
   const ok = await verify(plain, user.password);
   if (!ok) return notify('Password salah', 'error');
   currentUser = user;
@@ -177,7 +177,7 @@ async function buyProduct(id, name, price) {
 
 function loadAdminPanel() {
   el('admin-panel').innerHTML = `
-    <div class="card"><h2>👑 Admin Panel</h2>
+    <div class="card glass"><h2>👑 Admin Panel</h2>
       <button class="btn btn-primary" onclick="adminAddProduct()">Tambah Produk</button>
       <button class="btn btn-primary" onclick="adminBroadcast()">Broadcast</button>
       <button class="btn btn-danger" onclick="adminAbuse()">+1k Koin Abuse</button>
@@ -299,7 +299,7 @@ function hideModals() {
   document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
 }
 async function sendDiscord(msg, type) {
-  const url = type === 'redeem' ? CONFIG.DISCORD_REDEEM : CONFIG.DISCORD_LEADERBOARD;
+  const url = type === 'redeem' ? `https://discord.com/api/webhooks/${CONFIG.DISCORD_WEBHOOK_ID}/${CONFIG.DISCORD_WEBHOOK_TOKEN}` : CONFIG.DISCORD_LEADERBOARD;
   await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: msg }) });
 }
 el('sound-toggle').onclick = () => {
