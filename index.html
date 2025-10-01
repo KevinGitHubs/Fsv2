@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FSm4e - Ultimate QR Game Platform</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="header-content">
+      <div class="logo"><span>🎮 FSm4e</span></div>
+      <div class="user-info">
+        <div class="coin-display">🪙 <span id="user-coins">0</span> koin</div>
+        <div class="rank-badge" id="user-rank-badge">👑 <span id="user-rank">NonPil</span></div>
+        <button class="btn btn-primary" id="chat-toggle">💬 Chat</button>
+        <button class="btn btn-primary" id="sound-toggle">🔊 Sound</button>
+        <button class="btn btn-primary" id="logout-btn">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div id="dashboard" class="hidden">
+    <div class="card streak-banner">
+      <h3>🔥 Daily Streak <span id="streak-count">0</span> hari</h3>
+      <button class="btn btn-success" id="claim-streak">Klaim Hadiah</button>
+    </div>
+
+    <div class="card">
+      <h3>🎰 Spin-the-Wheel (Gratis 1x/hari)</h3>
+      <canvas id="wheel-canvas" width="300" height="300"></canvas>
+      <button class="btn btn-primary" id="spin-btn">Putar</button>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">📱 Scan QR Code</h2>
+      <div class="scan-stats">Scan hari ini: <span id="scan-count">0</span>/<span id="scan-limit">5</span> (+50 koin/scan)</div>
+      <button class="btn btn-primary" id="scan-btn">📷 Buka Scanner</button>
+    </div>
+
+    <div class="game-container">
+      <h2>🎮 Game Zone</h2>
+      <div class="game-selection">
+        <div class="game-card" data-game="math">🧮<h3>Math Game</h3></div>
+        <div class="game-card" data-game="memory">🧠<h3>Memory Game</h3></div>
+        <div class="game-card" data-game="puzzle">🎯<h3>Puzzle Game</h3></div>
+        <div class="game-card" data-game="click">⚡<h3>Click Race</h3></div>
+      </div>
+      <div id="active-game" class="hidden"><div id="game-content"></div></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">🛍️ Toko Produk</h2>
+      <div id="product-list" class="product-list"></div>
+    </div>
+
+    <div id="admin-panel" class="hidden"></div>
+
+    <div class="chat-container hidden" id="chat-container">
+      <h2>💬 Global Chat</h2>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-container">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Ketik pesan...">
+        <button class="btn btn-primary" id="send-chat-btn">📤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="login-modal" class="modal hidden"><div class="modal-content">
+  <h2>🔐 Login</h2>
+  <form id="login-form">
+    <input type="text" id="login-username" class="form-control" placeholder="Username" required>
+    <input type="password" id="login-password" class="form-control" placeholder="Password" required>
+    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:15px;">Login</button>
+  </form>
+  <p style="text-align:center;margin-top:15px;">Belum punya akun? <a href="#" id="show-register">Daftar</a></p>
+</div></div>
+
+<div id="register-modal" class="modal hidden"><div class="modal-content">
+  <h2>👤 Daftar</h2>
+  <form id="register-form">
+    <input type="text" id="register-name" class="form-control" placeholder="Nama Lengkap" required>
+    <input type="tel" id="register-phone" class="form-control" placeholder="Nomor HP (08...)" required>
+    <input type="text" id="register-username" class="form-control" placeholder="Username" required>
+    <input type="password" id="register-password" class="form-control" placeholder="Password" required>
+    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:15px;">Daftar</button>
+  </form>
+  <p style="text-align:center;margin-top:15px;">Sudah punya akun? <a href="#" id="show-login">Login</a></p>
+</div></div>
+
+<div id="qr-scanner-modal" class="modal hidden"><div class="modal-content">
+  <h2>📱 Scan QR</h2>
+  <video id="qr-video" style="width:100%;max-width:300px;border-radius:10px;"></video>
+  <p>Arahkan kamera ke QR code</p>
+  <div id="qr-result" class="hidden" style="text-align:center;margin-top:15px;">
+    <p>✅ QR Code berhasil dipindai!</p>
+    <button class="btn btn-success" id="close-scanner">Tutup</button>
+  </div>
+</div></div>
+
+<div id="notification-area"></div>
+<div id="broadcast-area"></div>
+
+<audio id="snd-click" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+<audio id="snd-win" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+<audio id="snd-lose" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-over-1947.mp3" preload="auto"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
