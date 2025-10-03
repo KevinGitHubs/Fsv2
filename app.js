@@ -1,3 +1,4 @@
+// ---------- CONFIG ----------
 const CONFIG = {
   SUPABASE_URL: 'https://rcgrcqlqwcmnjweqzptn.supabase.co',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ3JjcWxxd2Ntbmp3ZXF6cHRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5Njk0NjAsImV4cCI6MjA3NDU0NTQ2MH0.fzSW136Y0W0tcqriqyB5oYaczbuAgFYngg3_XCIM8s4',
@@ -10,21 +11,34 @@ const CONFIG = {
 const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 let currentUser = null, soundOn = true, streak = 0, spinToday = false;
 
+// ---------- HELPER ----------
 const el = id => document.getElementById(id);
 const play = id => soundOn && el(id).play();
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+function safeUser(str) {
+  return str.trim().toLowerCase();
+}
 
+// ---------- AUTH ----------
 async function hash(p) { return bcrypt.hashSync(p, 10); }
 async function verify(p, h) { return bcrypt.compareSync(p, h); }
 
 async function login(e) {
   e.preventDefault();
-  const username = el('login-username').value.trim();
+  const username = safeUser(el('login-username').value);
   const plain = el('login-password').value;
-  const { data: user } = await supabaseClient.from('users').select('*').eq('username', username).single();
-  if (!user) return notify('Username tidak ditemukan', 'error');
+
+  const { data: user, error } = await supabaseClient
+        .from('users')
+        .select('*')
+        .ilike('username', username)   // case-insensitive
+        .single();
+
+  if (error || !user) return notify('Username tidak ditemukan', 'error');
+
   const ok = await verify(plain, user.password);
   if (!ok) return notify('Password salah', 'error');
+
   currentUser = user;
   localStorage.setItem('fsm4e_user', JSON.stringify(user));
   hideModals();
@@ -36,19 +50,34 @@ async function register(e) {
   e.preventDefault();
   const name = el('register-name').value.trim();
   const phone = el('register-phone').value.trim();
-  const username = el('register-username').value.trim();
+  const username = safeUser(el('register-username').value);
   const plain = el('register-password').value;
+
   if (!/^08[0-9]{8,11}$/.test(phone)) return notify('Nomor HP salah', 'error');
-  const exists = await supabaseClient.from('users').select('id').eq('username', username).single();
-  if (exists) return notify('Username dipakai', 'error');
-  const pwd = await hash(plain);
-  const ref = 'FSM4E-' + rand(100000, 999999);
-  await supabaseClient.from('users').insert({ name, phone, username, password: pwd, referral_code: ref });
+
+  const { data: exists } = await supabaseClient
+        .from('users')
+        .select('id')
+        .ilike('username', username)
+        .single();
+
+  if (exists) return notify('Username sudah ada', 'error');
+
+  const pwdHash = await hash(plain);
+  const refCode = 'FSM4E-' + rand(100000, 999999);
+
+  const { error: insErr } = await supabaseClient
+        .from('users')
+        .insert({ name, phone, username, password: pwdHash, referral_code: refCode });
+
+  if (insErr) return notify('Gagal mendaftar: ' + insErr.message, 'error');
+
   notify('Daftar berhasil, silakan login', 'success');
   el('register-form').reset();
   showModal('login-modal');
 }
 
+// ---------- DASHBOARD ----------
 function showDashboard() {
   el('dashboard').classList.remove('hidden');
   loadStreak();
