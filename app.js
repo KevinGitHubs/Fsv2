@@ -11,13 +11,10 @@ const CONFIG = {
 const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 let currentUser = null, soundOn = true, streak = 0, spinToday = false;
 
-// ---------- HELPER ----------
 const el = id => document.getElementById(id);
 const play = id => soundOn && el(id).play();
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-function safeUser(str) {
-  return str.trim().toLowerCase();
-}
+const safeUser = str => str.trim().toLowerCase();
 
 // ---------- AUTH ----------
 async function hash(p) { return bcrypt.hashSync(p, 10); }
@@ -31,7 +28,7 @@ async function login(e) {
   const { data: user, error } = await supabaseClient
         .from('users')
         .select('*')
-        .ilike('username', username)   // case-insensitive
+        .ilike('username', username)
         .single();
 
   if (error || !user) return notify('Username tidak ditemukan', 'error');
@@ -77,6 +74,42 @@ async function register(e) {
   showModal('login-modal');
 }
 
+// ---------- GEAR SETTINGS ----------
+async function loadUserSettings() {
+  if (!currentUser) return;
+  // Ambil preferensi user (bisa tambah kolom di tabel users)
+  const { data } = await supabaseClient.from('users').select('dark_mode, sound_on').eq('id', currentUser.id).single();
+  if (data) {
+    el('dark-toggle').checked = data.dark_mode;
+    el('sound-global-toggle').checked = data.sound_on;
+    soundOn = data.sound_on;
+  }
+}
+async function saveSettings() {
+  if (!currentUser) return;
+  const dark = el('dark-toggle').checked;
+  const sound = el('sound-global-toggle').checked;
+  await supabaseClient.from('users').update({ dark_mode: dark, sound_on: sound }).eq('id', currentUser.id);
+  soundOn = sound;
+  document.body.classList.toggle('dark-mode', dark);
+  notify('Pengaturan disimpan', 'success');
+}
+async function resetPassword() {
+  if (!currentUser) return;
+  const newPass = prompt('Masukkan password baru (min 6 karakter)');
+  if (!newPass || newPass.length < 6) return notify('Password minimal 6 karakter', 'error');
+  const hash = await hash(newPass);
+  await supabaseClient.from('users').update({ password: hash }).eq('id', currentUser.id);
+  notify('Password berhasil diubah', 'success');
+}
+async function deleteAccount() {
+  if (!currentUser) return;
+  if (!confirm('Yakin ingin menghapus akun? Semua data akan hilang.')) return;
+  await supabaseClient.from('users').delete().eq('id', currentUser.id);
+  localStorage.removeItem('fsm4e_user');
+  location.reload();
+}
+
 // ---------- DASHBOARD ----------
 function showDashboard() {
   el('dashboard').classList.remove('hidden');
@@ -85,6 +118,7 @@ function showDashboard() {
   loadProducts();
   loadChat();
   if (currentUser.is_admin) loadAdminPanel();
+  loadUserSettings();
 }
 
 async function loadStreak() {
@@ -156,7 +190,19 @@ async function loadProducts() {
   data.forEach(p => {
     const div = document.createElement('div');
     div.className = 'product-item';
-    div.innerHTML = `<img src="${p.image_url}" alt="${p.name}" loading="lazy"><h4>${p.name}</h4><p>${p.price} koin</p><button class="btn btn-primary" onclick="buyProduct(${p.id}, '${p.name}', ${p.price})">Beli</button>`;
+    const diskon = p.discount_percent || 0;
+    const hargaAsli = p.price;
+    const hargaDiskon = Math.round(hargaAsli * (100 - diskon) / 100);
+    div.innerHTML = `
+      <img src="${p.image_url}" alt="${p.name}" loading="lazy">
+      <h4>${p.name}</h4>
+      <div class="price-tag">
+        ${diskon > 0 ? `<span class="original-price">${hargaAsli} koin</span>` : ''}
+        <span class="final-price">${hargaDiskon} koin</span>
+        ${diskon > 0 ? `<span class="discount-label">-${diskon}%</span>` : ''}
+      </div>
+      <button class="btn btn-primary" onclick="buyProduct(${p.id}, '${p.name}', ${hargaDiskon})">Beli</button>
+    `;
     list.appendChild(div);
   });
 }
@@ -218,8 +264,9 @@ async function adminAddProduct() {
   const name = prompt('Nama Produk');
   const price = +prompt('Harga (koin)');
   const img = prompt('URL Gambar');
+  const diskon = +prompt('Diskon % (0-99, kosongi jika tidak ada)') || 0;
   if (!name || !price || !img) return;
-  await supabaseClient.from('products').insert({ name, price, image_url: img });
+  await supabaseClient.from('products').insert({ name, price, image_url: img, discount_percent: diskon });
   notify('Produk ditambahkan', 'success');
   loadProducts();
 }
@@ -341,10 +388,17 @@ el('logout-btn').onclick = () => {
   location.reload();
 };
 
+// ---------- EVENT ----------
 el('login-form').onsubmit = login;
 el('register-form').onsubmit = register;
 el('show-register').onclick = e => { e.preventDefault(); showModal('register-modal'); };
 el('show-login').onclick = e => { e.preventDefault(); showModal('login-modal'); };
 el('claim-streak').onclick = claimStreak;
+el('settings-btn').onclick = () => showModal('settings-modal');
+el('dark-toggle').onchange = saveSettings;
+el('sound-global-toggle').onchange = saveSettings;
+el('reset-pass-btn').onclick = resetPassword;
+el('del-acc-btn').onclick = deleteAccount;
+document.querySelectorAll('.close-modal').forEach(btn => btn.onclick = () => hideModals());
 
 showModal('login-modal');
