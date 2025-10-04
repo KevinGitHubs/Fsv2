@@ -1,13 +1,28 @@
 :root {
   --primary: #4361ee; --secondary: #3a0ca3; --success: #4cc9f0; --danger: #f72585;
   --warning: #f8961e; --info: #4895ef; --light: #f8f9fa; --dark: #212529;
-  --blur: 10px; --radius: 16px;
+  --blur: 12px; --radius: 16px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui; }
-body { background: linear-gradient(135deg, #1d2b64 0%, #f8cdda 100%); min-height: 100vh; color: var(--dark); transition: background .3s; }
+body {
+  background: linear-gradient(-45deg, #1d2b64, #f8cdda, #485563, #29323c);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  min-height: 100vh; color: var(--dark); transition: background .3s;
+}
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 body.dark-mode { filter: invert(1) hue-rotate(180deg); }
 .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-.glass { background: rgba(255,255,255,.15); backdrop-filter: blur(var(--blur)); border: 1px solid rgba(255,255,255,.2); border-radius: var(--radius); }
+.glass {
+  background: rgba(255,255,255,.15);
+  backdrop-filter: blur(var(--blur));
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: var(--radius);
+}
 header { padding: 15px 0; margin-bottom: 30px; }
 .header-content { display: flex; justify-content: space-between; align-items: center; }
 .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; }
@@ -17,6 +32,8 @@ header { padding: 15px 0; margin-bottom: 30px; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-success { background: var(--success); color: white; }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+.gear { font-size: 1.3rem; animation: rotate 4s linear infinite; }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .card { padding: 25px; margin-bottom: 25px; animation: fadeIn .6s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
@@ -40,3 +57,15 @@ header { padding: 15px 0; margin-bottom: 30px; }
 .product-item img { width: 100%; border-radius: 12px; }
 .streak-banner { display: flex; justify-content: space-between; align-items: center; }
 #wheel-canvas { border-radius: 50%; box-shadow: 0 8px 25px rgba(0,0,0,.2); transition: transform 4s cubic-bezier(.17,.67,.83,.67); }
+
+/* Settings Modal */
+.settings-body { display: flex; flex-direction: column; gap: 15px; }
+.switch-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.switch-label input { display: none; }
+.slider { width: 40px; height: 20px; background: #ccc; border-radius: 20px; position: relative; transition: .3s; }
+.slider::before { content: ''; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: .3s; }
+.switch-label input:checked + .slider { background: var(--primary); }
+.switch-label input:checked + .slider::before { transform: translateX(20px); }
+.divider { border: 0; height: 1px; background: rgba(255,255,255,.2); margin: 10px 0; }
+.gear { font-size: 1.3rem; animation: rotate 4s linear infinite; }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
